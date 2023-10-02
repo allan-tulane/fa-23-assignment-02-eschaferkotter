@@ -50,38 +50,40 @@ def pad(x, y):
 
 
 def subquadratic_multiply(x, y):
-  return _subquadratic_multiply_(x, y).decimal_val
+  return _subquadratic_multiply(x, y).decimal_val
 
 
-def _subquadratic_multiply_(x, y):
-  xvec = BinaryNumber(x).binary_vec
-  yvec = BinaryNumber(x).binary_vec
+def _subquadratic_multiply(x, y):
+  xvec = x.binary_vec
+  yvec = x.binary_vec
 
   xvec, yvec = pad(xvec, yvec)
 
-  if x <= 1 and y <= 1:
-    return BinaryNumber(x * y)
-  else:
-    x_l, x_r = split_number(xvec)
-    y_l, y_r = split_number(yvec)
+  if x.decimal_val <= 1 and y.decimal_val <= 1:
+    return BinaryNumber(x.decimal_val * y.decimal_val)
 
-    xyL = subquadratic_multiply(x_l, y_l)
-    xyR = subquadratic_multiply(x_r, y_r)
+  x_l, x_r = split_number(xvec)
+  y_l, y_r = split_number(yvec)
 
-    combo = _subquadratic_multiply_(
-        BinaryNumber(x_l.decimal_val + y_l.decimal_val),
-        BinaryNumber(y_l.decimal_val + y_r.decimal_val))
-    
-    
-    half = BinaryNumber(combo - xyL.decimal_val - xyR.decimal_val)
-    
-    bit1 = bit_shift(xyL, len(x.binary_vec)).decimal_val
-    
-    bit2 = bit_shift(half, (len(x.binary_vec))//2).decimal_val
-    
-    return BinaryNumber(bit1 + bit2 + xyR.decimal_val)
+  xyL = _subquadratic_multiply(x_l, y_l)
+  xyR = _subquadratic_multiply(x_r, y_r)
+
+  sum = _subquadratic_multiply(BinaryNumber(x_l.decimal_val + x_r.decimal_val),
+                               BinaryNumber(y_l.decimal_val + y_r.decimal_val))
+
+  sumReduced = BinaryNumber(sum.decimal_val - xyL.decimal_val -
+                            xyR.decimal_val)
+
+  sumReduceShift = bit_shift(sumReduced, len(xvec) // 2)
+  leftShift = bit_shift(xyL, len(xvec))
+
+  return BinaryNumber(leftShift.decimal_val + sumReduceShift.decimal_val +
+                      xyR.decimal_val)
+
 
 def time_multiply(x, y, f):
   start = time.time()
-  # multiply two numbers x, y using function f
+
+  f(x, y)
+
   return (time.time() - start) * 1000
